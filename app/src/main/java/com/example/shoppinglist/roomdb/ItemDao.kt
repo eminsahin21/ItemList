@@ -9,7 +9,7 @@ import com.example.shoppinglist.model.Item
 @Dao
 interface ItemDao {
 
-    //İlk 2 sorgunun yapısı gereği coroutines ile çalışır (select sorgusu)  ama en alttakileri suspend olmalıdır
+    //İlk 2 sorgunun yapısı gereği coroutines ile çalışır (select sorgusu)  ama en alttakiler suspend olmalıdır
     @Query("SELECT item_name,id FROM item")
     fun getItemWithNameAndId() : List<Item>
 

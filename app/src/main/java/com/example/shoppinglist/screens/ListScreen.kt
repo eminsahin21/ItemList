@@ -61,9 +61,7 @@ fun ItemRow(item: Item) {
         Text(text = item.itemName,
             style = MaterialTheme.typography.displaySmall,
             modifier = Modifier.padding(2.dp))
-    }
-
-
+        }
 }
 
 
