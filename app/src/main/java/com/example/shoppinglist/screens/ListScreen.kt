@@ -21,16 +21,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.shoppinglist.model.Item
 
 @Composable
-fun ItemList(itemList: List<Item>){
+fun ItemList(itemList: List<Item>,navController: NavController){
 
     Scaffold(topBar = {},
         floatingActionButtonPosition = FabPosition.End,
         floatingActionButton = {
-            FAB() {
-                //navigation to addscreen
+            FAB {
+                navController.navigate("add_item_screen")
             }
         } , content = { innerPadding ->
             LazyColumn(
@@ -40,7 +41,7 @@ fun ItemList(itemList: List<Item>){
                     .background(color = MaterialTheme.colorScheme.primaryContainer)
             ) {
                 items(itemList) {
-                    ItemRow(it)
+                    ItemRow(it,navController)
                 }
             }
         })
@@ -49,13 +50,16 @@ fun ItemList(itemList: List<Item>){
 }
 
 @Composable
-fun ItemRow(item: Item) {
+fun ItemRow(item: Item,navController: NavController) {
 
     Column(modifier = Modifier
         .fillMaxWidth()
         .background(color = MaterialTheme.colorScheme.inverseSurface)
         .clickable{
             //navigation to detailscreen
+            navController.navigate(
+                "detail_screen/${item.id}"
+            )
         }) {
 
         Text(text = item.itemName,

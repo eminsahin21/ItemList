@@ -29,7 +29,7 @@ import com.example.shoppinglist.model.Item
 
 
 @Composable
-fun DetailScreen(item:Item, deleteFunction: () -> Unit){
+fun DetailScreen(item: Item?, deleteFunction: () -> Unit){
 
     Box(modifier = Modifier.fillMaxSize()
         .background(color = MaterialTheme.colorScheme.inversePrimary)
@@ -37,17 +37,17 @@ fun DetailScreen(item:Item, deleteFunction: () -> Unit){
         Column(modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally ) {
 
-            val imageBitmap = item.image?.let { byteArray ->
+            val imageBitmap = item?.image?.let { byteArray ->
                 BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size).asImageBitmap()
 
             }
-            Image(bitmap = imageBitmap ?: ImageBitmap.imageResource(id=R.drawable.ic_launcher_foreground),
-                contentDescription = item.itemName,
+            Image(bitmap = imageBitmap ?: ImageBitmap.imageResource(id=R.drawable.supermarketsepet),
+                contentDescription = item?.itemName,
                 modifier = Modifier.padding(10.dp)
                     .size(300.dp,200.dp))
 
 
-            Text(text = item.itemName,
+            Text(text = item?.itemName ?: "",
                 style = MaterialTheme.typography.displayMedium,
                 modifier = Modifier.padding(2.dp),
                 fontWeight = FontWeight.Bold,
@@ -57,7 +57,7 @@ fun DetailScreen(item:Item, deleteFunction: () -> Unit){
             Spacer(modifier = Modifier.height(8.dp))
 
 
-            Text(text = item.price ?:"",
+            Text(text = item?.price ?:"",
                 style = MaterialTheme.typography.displayMedium,
                 modifier = Modifier.padding(2.dp),
                 fontWeight = FontWeight.Bold,
@@ -67,7 +67,7 @@ fun DetailScreen(item:Item, deleteFunction: () -> Unit){
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(text = item.storeName ?: "",
+            Text(text = item?.storeName ?: "",
                 style = MaterialTheme.typography.displayMedium,
                 modifier = Modifier.padding(2.dp),
                 fontWeight = FontWeight.Bold,

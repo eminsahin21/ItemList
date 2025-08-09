@@ -1,6 +1,9 @@
 package com.example.shoppinglist.screens
 
+import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
@@ -24,14 +27,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults // TextFieldDefaults'u import edin
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color // Color'ı import edin
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -40,11 +43,11 @@ import androidx.core.content.ContextCompat
 import coil.compose.rememberAsyncImagePainter
 import com.example.shoppinglist.model.Item
 import com.example.shoppinglist.R
-
+import java.io.ByteArrayOutputStream
 
 
 @Composable
-fun AddItemScreen(saveFunction: () -> Unit) {
+fun AddItemScreen(saveFunction: (Item) -> Unit) {
 
     val itemName = remember { mutableStateOf("") }
     val storeName = remember { mutableStateOf("") }
@@ -55,6 +58,10 @@ fun AddItemScreen(saveFunction: () -> Unit) {
 
     // Transparan TextField'lar için metin rengi (arkaplana göre seçilmeli)
     val textFieldTextColor = MaterialTheme.colorScheme.onSurface
+
+    val context = LocalContext.current
+
+    var selectedImageUri = remember { mutableStateOf<Uri?>(null) }
 
     Box(
         modifier = Modifier
@@ -68,8 +75,8 @@ fun AddItemScreen(saveFunction: () -> Unit) {
             modifier = Modifier.fillMaxWidth()
         ) {
 
-            ImagePicker(onImageSelected = {
-
+            ImagePicker(onImageSelected = { uri ->
+                selectedImageUri.value = uri
             })
 
 
@@ -132,13 +139,18 @@ fun AddItemScreen(saveFunction: () -> Unit) {
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(onClick = {
-                val item = Item(
+
+                val imageByteArray = selectedImageUri.value?.let {
+                    resizeImage(context, it as Uri,600,400)
+                } ?: ByteArray(0)
+
+                val itemToInsert = Item(
                     itemName.value,
                     storeName.value,
                     price.value,
-                    ByteArray(0) // Boş ByteArray veya null, image için modelinize bağlı
+                    imageByteArray
                 )
-                saveFunction()
+                saveFunction(itemToInsert)
             }) {
                 Text("Save")
             }
@@ -162,7 +174,7 @@ fun ImagePicker(onImageSelected : (Uri?) -> Unit){
 
     //fotoğrafın seçildiği yolu alma
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        selectedImageUri = uri as MutableState<Uri?>
+        selectedImageUri.value = uri
     }
 
     //izin verildi verilmedi kontrolü
@@ -179,13 +191,13 @@ fun ImagePicker(onImageSelected : (Uri?) -> Unit){
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center) {
 
-        selectedImageUri?.let {
+        selectedImageUri.value?.let {
             Image(painter = rememberAsyncImagePainter(model = it),
                 contentDescription = "Selected Image",
                 modifier = Modifier
                     .size(300.dp,200.dp)
                     .padding(16.dp))
-            onImageSelected(it as Uri?)
+            onImageSelected(it)
         } ?: Image(painter = painterResource(R.drawable.ic_launcher_foreground),
             "Select Image",
             modifier = Modifier
@@ -202,5 +214,33 @@ fun ImagePicker(onImageSelected : (Uri?) -> Unit){
 
     }
 
+
+}
+
+fun resizeImage(context: Context,uri: Uri,maxWidth: Int, maxHeight: Int): ByteArray? {
+
+    return try{
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val originalBitmap = BitmapFactory.decodeStream(inputStream)
+
+        val ratio = originalBitmap.width.toFloat() / originalBitmap.height.toFloat()
+
+        var width = maxWidth
+        var height = (width/ratio).toInt()
+
+        if (height>maxHeight){
+            height=maxHeight
+            width = (height*ratio).toInt()
+        }
+
+        val resizedBitmap = Bitmap.createScaledBitmap(originalBitmap,width,height,true)
+
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        resizedBitmap.compress(Bitmap.CompressFormat.JPEG,100,byteArrayOutputStream)
+        byteArrayOutputStream.toByteArray()
+    }catch (e: Exception){
+        e.printStackTrace()
+        null
+    }
 
 }
